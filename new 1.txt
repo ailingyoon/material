@@ -1,0 +1,18 @@
+ 
+Working with ScriptTask, it's good to use and so powerful, VB.net and C# are the script options, learning how to set values to the variables. 
+ 
+Working with Execute ProcessTask, execute an  application  (extension is exe) 
+
+Working with SendMailTask , learning how to set the "To list"  in Expressions area and how to bind to  SMTP connection manager. 
+ 
+Working with SqlTask  to get the full result set and set the result set as an object variable.
+
+Working with SqlTask , learning to execute a SQL statement, for example, exec a stored procedure,  and  passing  the parameters to the stored procedure
+
+Working with Foreach Loop Container and using Foreach ADO Enumerator and how to add indexes to variables.
+
+Working with Foreach Loop Container and using Foreach File Enumerator to load files.
+ 
+Working with a Sequence Container and know using it for grouping.  
+ 
+Working with DataFlow, import data from a flat file to the database (OLEDB),and using Row Count component and data conversion component.
