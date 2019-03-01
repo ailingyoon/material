@@ -1,0 +1,253 @@
+ /*
+	SERVER: MBUPRODRPT
+	DATABASE: ARSystem
+*/
+USE ARSystem
+--select Incident_number, * from [dbo].[HPD_IncidentInterface] where assignee_login_id = 'A716675'
+--select * from [dbo].[HPD_NGCHPD_IncidentAssociatedR]
+IF OBJECT_ID('tempdb.dbo.#plans') IS NOT NULL
+BEGIN
+	DROP TABLE #plans
+END
+GO
+CREATE TABLE #plans
+(
+	hp_state varchar(4),
+	programname varchar(50)
+);
+DECLARE @weekbegin smalldatetime = '2018-11-19 14:59:00.000';
+DECLARE @weekend smalldatetime = '2018-11-26 15:00:00.000';
+DECLARE @beginningofyear date = CONVERT(DATE,CONVERT(varchar(15),DATEPART(yyyy,GETDATE())) + '-01-01'),
+        @currentdate date = CONVERT(DATE, GETDATE() + 1);
+print @beginningofyear
+
+ 
+INSERT INTO #plans
+(hp_state, programname)
+VALUES
+
+('PA','(CHIP) Aetna Better Health Kids'),
+('CA','Aetna Better Health of California'),
+('FL','All Florida Plans'),
+('MCRP','All Mercy Care Plans'),
+('TX','All Texas Plans'),
+('CA','California'),
+('WV','CoventryCares of West Virginia'),
+('DE','Delaware LTC'),
+('DE','Delaware Physicians Care, Inc.'),
+('DE','Delaware-Aetna Better Health'),
+('FL','Florida'),
+('FL','Florida CVT'),
+('FL','Florida LTSS'),
+('FL','Florida Medicaid'),
+('???','Health Care USA'),
+('IL','IL Duals'),
+('IL','Illinois'),
+('IL','Illinois-Aetna Better Health'),
+('IO','Iowa - Aetna Better Health'),
+('KS','Aetna Better Health of Kansas'),
+('KY','Kentucky'),
+('KY','Kentucky-Aetna Better Health'),
+('LA','Louisiana'),
+('LA','Louisiana-Aetna Better Health'),
+('MD','MajestaCare'),
+('MD','Maryland'),
+('MD','Maryland Physicians Care'),
+('MD','Maryland-Aetna Better Health'),
+('MCRP','Mercy Care Advantage'),
+('MCRP','Mercy Care LTC'),
+('MCRP','Mercy Care Plan'),
+('MCRP','Mercy Maricopa Advantage'),
+('MMIC','Mercy Maricopa Integrated Care'),
+('MI','MI Duals'),
+('MI','Michigan'),
+('MI','Michigan OmniCare'),
+('MI','Michigan-Aetna Better Health'),
+('MO','Missouri'),
+('MO','Missouri-Aetna Better Health'),
+('NE','Nebraska'),
+('NE','Nebraska Medicaid'),
+('NE','Nebraska-Aetna Better Health'),
+('NV','Nevada-Aetna Better Health'),
+('NJ','New Jersey'),
+('NJ','New Jersey-Aetna Better Health'),
+('NY','New York'),
+('NY','New York MLTCP'),
+('NY','New York-Aetna Better Health'),
+('NJ','NJ Duals'),
+('NJ','NJ MLTSS'),
+('NY','NY Duals'),
+('OH','OH Duals'),
+('OH','Ohio'),
+('OH','Ohio-Aetna Better Health'),
+('PA','PA-Private Care Option'),
+('TX','Parkland Community Health Plan'),
+('PA','Pennsylvania'),
+('PA','Pennsylvania-Aetna Better Health'),
+('TX','Texas'),
+('TX','Texas-Aetna Better Health'),
+('VA','Virginia'),
+('VA','Virginia Aetna Better Health'),
+('VA','Virginia CCC Plus'),
+('VA','Virginia DSNP'),
+('WV','West Virginia'),
+('WV','West Virginia Aetna Better Health')
+
+IF OBJECT_ID('tempdb.dbo.#tmp') IS NOT NULL 
+BEGIN 
+	drop table #tmp
+	
+END
+IF OBJECT_ID('tempdb.dbo.#tmp2') IS NOT NULL 
+BEGIN 
+	drop table #tmp2
+	
+END
+IF OBJECT_ID('tempdb.dbo.#tmp3') IS NOT NULL 
+BEGIN 
+	drop table #tmp3
+	
+END
+IF OBJECT_ID('tempdb.dbo.#tmp4') IS NOT NULL 
+BEGIN 
+	drop table #tmp4
+	
+END
+
+IF OBJECT_ID('tempdb.dbo.#request_plans') IS NOT NULL
+BEGIN
+	drop table #request_plans
+END
+
+
+
+select
+	CASE WHEN t.status = 4 THEN 'In Progress'
+		 WHEN t.status = 0 THEN 'Unstarted'
+		 WHEN t.status = 1 THEN 'Pending' 
+		 WHEN t.status = 5 THEN 'Completed'
+		 WHEN t.status = 8 THEN 'Closed' END as [Request Status],
+	t.work_order_id,
+	t.Request_Assignee,
+	t.WO_Type_Field_18 as [priority],
+	--priority, 
+	REPLACE(RTRIM(LTRIM(t.[Summary])),char(10),'') AS [Summary],
+	DATEADD(SECOND, t.[Submit_Date], '19700101') as [Submit_Date],
+	DATEADD(SECOND, t.[Completed_Date], '19700101') as [Completed_Date],
+	--'<' + CAST([Detailed_Description] as VARCHAR(5000)) + '>' as [Detailed_Description],
+	t.Internet_E_mail,
+	t.[WO_Type_field_12] as [Work Type],
+	t.[ContactFullName],
+	t.[Categorization_Tier_2],
+	t.[Categorization_Tier_3]
+	into #tmp
+	--select detailed_description, work_order_id, *
+	from [dbo].[WOI_WorkOrder] t
+	--join [dbo].[AET_WOI_State_Plan_Join] t2 on t2.work_order_id = t.work_order_id
+where [Categorization_Tier_2] = 'claims' --Support_group_name = 'PS Ops - Provider' 
+--and Request_Assignee = 'Steven Turturo'
+and t.status != 7 
+and DATEADD(SECOND, t.[Submit_Date], '19700101') between @beginningofyear and @currentdate 
+
+
+select 
+p.hp_state as [Health Plan],
+CONVERT(varchar(MAX),t.[Request Status]) as request_status,
+CONVERT(varchar(MAX),t.[Work_Order_ID]) as work_order_ID,
+CONVERT(varchar(MAX),t.[Request_Assignee]) as request_assignee,
+CONVERT(varchar(MAX),t.priority) as priority,
+CONVERT(varchar(MAX), t.[summary]) as summary,
+CONVERT(date,CONVERT(varchar(MAX), t.Submit_Date)) as submit_date,
+CONVERT(date,CONVERT(varchar(MAX), t.Completed_Date)) as complete_date,
+CONVERT(varchar(MAX),t.Internet_E_mail) as requester_email,
+CONVERT(varchar(MAX),t.[Work Type]) as work_type,
+CONVERT(varchar(MAX),t.ContactFullName) as requester_fullname,
+CONVERT(varchar(MAX),[Categorization_Tier_2]) as category,
+CONVERT(varchar(MAX),[Categorization_Tier_3]) as subcategory
+into #tmp2
+from #tmp t
+join [dbo].[AET_WOI_State_Plan_Join] t2 on t2.work_order_id = t.work_order_id
+	and t2.SP_Selected = '0'
+join #plans p (nolock) on p.programname = t2.SP_Plan
+WHERE (t.[Completed_Date] BETWEEN GETDATE()-1 AND GETDATE() +1) OR
+t.[Request Status] IN ('Assigned', 'In Progress','Unstarted','completed','closed')
+order by t.Request_Assignee, t.[Request Status],t.Work_Order_ID
+
+--select distinct * from #tmp2  where request_status IN ('In Progress', 'Unstarted','Assigned') order by work_order_id, submit_date
+----where Submit_date between GETDATE()-6 AND GETDATE() + 1
+--where [Request Status] not in ('Completed', 'Closed')
+--order by Submit_Date
+select distinct * into #tmp3 from #tmp2
+
+SELECT 
+	t.work_order_ID
+	,t.request_status
+	,t.request_assignee
+	,t.priority
+	,t.summary
+	,t.submit_date
+	,t.complete_date
+	,t.requester_email
+	,category
+	,subcategory
+	,t.requester_fullname
+	,STUFF((select ',' + t2.[Health Plan]
+	from #tmp3 t2 
+	WHERE t2.work_order_ID = t.work_order_ID
+	FOR XML PATH('')),1,1,'')
+as 'Plan(s)'
+into #tmp4
+from #tmp3 t   
+group by t.work_order_ID, request_status, request_assignee,priority, summary,submit_date,complete_date,requester_email,work_type, requester_fullname
+,category, subcategory
+
+ 
+
+ 
+	
+IF OBJECT_ID('tempdb..#checkrundates') IS NOT NULL BEGIN DROP TABLE #checkrundates END
+IF OBJECT_ID('tempdb..#checkrundays') IS NOT NULL BEGIN DROP TABLE #checkrundays END
+IF OBJECT_ID('tempdb..#dates') IS NOT NULL BEGIN DROP TABLE #dates END
+IF OBJECT_ID('tempdb..#checkrundays') IS NOT NULL BEGIN DROP TABLE #dates END
+IF OBJECT_ID('tempdb..#calendar') IS NOT NULL BEGIN DROP TABLE #calendar END
+
+CREATE TABLE #checkrundays (weekdayname varchar(15));
+insert into #checkrundays (weekdayname)
+VALUES
+('Monday'),
+('Wednesday'),
+('Friday')
+--select* from #checkrundays
+SELECT TOP(DATEDIFF(DAY,@beginningofyear,@currentdate) + 1)
+	thedate = DATEADD(DAY, ROW_NUMBER() OVER(ORDER BY a.object_id) - 1, @beginningofyear)
+	into #dates
+FROM sys.all_objects a
+	CROSS JOIN sys.all_objects b;
+
+SELECT thedate, datename(dw,thedate) as weekdayname 
+INTO #calendar 
+FROM #dates
+
+SELECT c.*
+INTO #checkrundates
+FROM #calendar c
+join #checkrundays crd on crd.weekdayname = c.weekdayname
+
+--select * from #checkrundates crdt
+select thedate,weekdayname, count(1) as submitted_bdu_count
+--select *
+from #tmp4 t
+join #checkrundates crdt on crdt.thedate = t.submit_date
+where subcategory != 'AACI'
+group by crdt.thedate, crdt.weekdayname
+order by thedate
+
+ 
+
+select request_assignee as 'Analyst',  *
+from #tmp4 
+where submit_date='2019-02-28'
+and request_assignee='Ailing Yoon'
+
+
+
