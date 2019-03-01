@@ -1,0 +1,15 @@
+This is an annoying feature of NPOI - you need to check the CellType to see which of the *CellValue properties you can use. If the CellType returns Formula, then you'll also need to check the CachedFormulaResultType property.
+
+The StringCellValue property only works if the cell is blank, a string, or a formula which returns a string.
+
+If you set the cell's value to 4, the type will be Numeric, which means you must use the NumericCellValue.
+
+If you just want the formatted value as a string, regardless of the cell's type, you can use the ToString method on the cell.
+
+You also need to look out for empty cells - by default, NPOI skips any empty cell in the GetCell method, so cell 2 might not be the second column. To avoid this, you need to pass MissingCellPolicy.RETURN_NULL_AND_BLANK to the GetCell method.
+
+Hide   Copy Code
+string value = sheet.GetRow(2).GetCell(3, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
+
+
+How do I get string of cell in .xlsx via NPOI
