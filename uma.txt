@@ -1,0 +1,49 @@
+Server : WVMQAMDQRPDB01
+SRVQNXTRPTOHQA :
+
+ USE [PlanAudit_OH]
+
+As a business user
+I want to load the file into plan audit
+So that the data can be extracted
+
+File Name: AET_CVS_MEDICARE_DAILY_CLAIMS_YYYYMMDD.XLSX
+Frequency: Daily
+Direction: Inbound
+AD Location:
+Layout Attached
+
+
+
+Table name: AD.CVS_Daily_Pharmacy_RejectedClaims
+ 
+User story in Rally: US73273
+ 
+ 
+For referral below:
+ 
+ABX formulary import – job id = 3248 (excel template used)
+ 
+\\WvmQamdssisap03\MBU8QABatch\MBUEDI.MCV.FormularyImport  package location
+ 
+Still to be tested in QA zeke.
+ 
+SRVQNXTRPTOHQA
+PLANAUDIT_OH
+ 
+Table – AD.CVS_Monthly_Formulary
+ 
+Octopus –
+ 
+MBUEDI.MCV.FormularyImport
+ 
+2.224.190221-124398 deployed in QA
+ 
+Yet to be tested via zeke
+ 
+Submitted zeke request – 
+ZEK0001531 
+ 
+Notes- Used the SSIS Excel template.
+No VBS or batch file.  
+ZEKE job runs via following command:  %IS01%3248 MBUEDI.MCV.FormularyImport M_CVS_FormularyData_Import
